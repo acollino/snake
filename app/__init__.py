@@ -31,9 +31,11 @@ def init_app(envFile="dev.env"):
     with app.app_context():
 
         from app.home import home_bp
+        from app.snake_day import snake_day_bp
 
         # Register blueprints. If needed, url_prefix param can be set to append a string (ie '/users') to the route url.
 
         app.register_blueprint(home_bp)
+        app.register_blueprint(snake_day_bp)
 
         return app

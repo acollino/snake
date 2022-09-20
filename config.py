@@ -1,4 +1,5 @@
 """Classes for Flask configurations."""
+from datetime import timedelta
 from os import environ
 
 
@@ -8,6 +9,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = environ.get("DATABASE_URL")
     SECRET_KEY = environ.get("SECRET_KEY")
+    PERMANENT_SESSION_LIFETIME = timedelta(days=1)
 
 
 class DevConfig(Config):
