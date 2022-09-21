@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Snake of the Day{% endblock %}
+
+{% block head %}
+<script src="{{ url_for('snake_day.static', filename='snake_day.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+Snake of the day!
+<div>{{ url_for('snake_day.static', filename="") }}</div>
+{% endblock %}

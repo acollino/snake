@@ -36,6 +36,6 @@ def init_app(envFile="dev.env"):
         # Register blueprints. If needed, url_prefix param can be set to append a string (ie '/users') to the route url.
 
         app.register_blueprint(home_bp)
-        app.register_blueprint(snake_day_bp)
+        app.register_blueprint(snake_day_bp, url_prefix="/")
 
         return app
