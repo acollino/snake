@@ -32,6 +32,7 @@ async function getRandomSnake() {
         date: new Date().toDateString(),
       };
       localStorage.setItem("dailySnake", JSON.stringify(dailySnake));
+      verifyScientificName();
     }
   }
 }
@@ -45,6 +46,41 @@ function checkIfOutdated() {
     dailySnake = JSON.parse(dailySnake);
     return dailySnake.date != todayStr;
   }
+}
+
+function getStoredSnake() {
+  let dailySnake = localStorage.getItem("dailySnake");
+  if (dailySnake) {
+    return JSON.parse(dailySnake);
+  }
+  return null;
+}
+
+// Some list entries have "Various" for scientific name or none at all
+function verifyScientificName() {
+  let scientificName = getStoredSnake().snake.taxonomy.scientific_name;
+  if (scientificName == null || !scientificName.includes(" ")) {
+    localStorage.removeItem("dailySnake");
+    getRandomSnake();
+  }
+}
+
+function parseScientificName() {
+  let scientificName = getStoredSnake().snake.taxonomy.scientific_name;
+  let spaceSeparator = scientificName.indexOf(" ");
+  let genus = scientificName.substring(0, spaceSeparator);
+  if (scientificName.includes(".")) {
+    genus = getStoredSnake().snake.taxonomy.genus;
+  }
+  let nameEnd = scientificName.indexOf(",");
+  if (nameEnd === -1) {
+    nameEnd = scientificName.indexOf("and");
+    if (nameEnd === -1) {
+      nameEnd = scientificName.length;
+    }
+  }
+  let species = scientificName.substring(spaceSeparator + 1, nameEnd);
+  return `${genus} ${species}`;
 }
 
 async function getSnakeDetails() {}
