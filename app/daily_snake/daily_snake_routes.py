@@ -3,10 +3,10 @@ import requests
 import os
 import random
 import datetime
-from app.snake_day import snake_day_bp
+from app.daily_snake import daily_snake_bp
 
 
-@snake_day_bp.route("/get/speciesname", methods=["GET"])
+@daily_snake_bp.route("/get/speciesname", methods=["GET"])
 def get_species_name():
     """Get the name of the snake of the day from the API-Ninjas snake list."""
     daily_snake = session.get("daily_snake", False)
@@ -21,6 +21,26 @@ def get_species_name():
         else:
             resp.raise_for_status()
     return jsonify(session["daily_snake"].get("snake"))
+
+
+@daily_snake_bp.route("/getname", methods=["GET"])
+def get_snake_name():
+    return render_template("daily_snake.html")
+
+
+@daily_snake_bp.route("/get/snakearray", methods=["GET"])
+def get_snake_array():
+    """Get the name of the snake of the day from the API-Ninjas snake list."""
+    params = {"name": "snake"}
+    headers = {"X-Api-Key": os.getenv("Ninjas-Api-Key", "")}
+    resp = requests.get(
+        "https://api.api-ninjas.com/v1/animals", params=params, headers=headers
+    )
+    if resp.status_code == requests.codes.ok:
+        return jsonify(resp.json())
+    else:
+        resp.raise_for_status()
+        return jsonify({"error": "something went wrong"})
 
 
 def pick_snake(snake_list):
@@ -38,10 +58,11 @@ def pick_snake(snake_list):
 
 
 # if there are no valid indices, need to start over
+# can return full array as well
 # make get_species_name a post request, store prior indices on localStorage
 # send those indices with the request.
 
 
-@snake_day_bp.route("/get/speciesdetails", methods=["POST"])
+@daily_snake_bp.route("/get/speciesdetails", methods=["POST"])
 def get_species_details():
     pass
