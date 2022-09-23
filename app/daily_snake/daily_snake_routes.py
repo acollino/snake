@@ -1,13 +1,12 @@
-from crypt import methods
 from flask import render_template, jsonify, session
 import requests
 import os
 import random
 import datetime
-from app.snake_day import snake_day_bp
+from app.daily_snake import daily_snake_bp
 
 
-@snake_day_bp.route("/get/speciesname", methods=["GET"])
+@daily_snake_bp.route("/get/speciesname", methods=["GET"])
 def get_species_name():
     """Get the name of the snake of the day from the API-Ninjas snake list."""
     daily_snake = session.get("daily_snake", False)
@@ -24,12 +23,12 @@ def get_species_name():
     return jsonify(session["daily_snake"].get("snake"))
 
 
-@snake_day_bp.route("/getname", methods=["GET"])
+@daily_snake_bp.route("/getname", methods=["GET"])
 def get_snake_name():
     return render_template("daily_snake.html")
 
 
-@snake_day_bp.route("/get/snakearray", methods=["GET"])
+@daily_snake_bp.route("/get/snakearray", methods=["GET"])
 def get_snake_array():
     """Get the name of the snake of the day from the API-Ninjas snake list."""
     params = {"name": "snake"}
@@ -64,6 +63,6 @@ def pick_snake(snake_list):
 # send those indices with the request.
 
 
-@snake_day_bp.route("/get/speciesdetails", methods=["POST"])
+@daily_snake_bp.route("/get/speciesdetails", methods=["POST"])
 def get_species_details():
     pass
