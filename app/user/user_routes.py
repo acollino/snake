@@ -1,4 +1,5 @@
 from flask import render_template, redirect
+from user_forms import SignupForm, LoginForm
 from app.models import User
 from app.user import user_bp
 
