@@ -3,13 +3,15 @@
 {% block title %}Sign In{% endblock %}
 
 {% block content %}
-<form method="post">
+<form method="post" class="flex flex-col items-center">
   {% include "base_form_contents.html" %}
-  <button
-    class="bg-green-600 text-neutral-800 active:bg-neutral-100 font-bold rounded ease-linear transition-all duration-150">Sign
-    In</button>
-  <a href="/"
-    class="bg-red-600 text-neutral-800 active:bg-neutral-100 font-bold rounded ease-linear transition-all duration-150"
-    role="button">Cancel</a>
+  <div>
+    <button
+      class="bg-green-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-green-900">Sign
+      In</button>
+    <a href="/"
+      class="inline-block bg-red-400 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-red-900"
+      role="button">Cancel</a>
+  </div>
 </form>
 {% endblock %}
