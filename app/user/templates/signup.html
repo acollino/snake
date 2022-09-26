@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Your Account{% endblock %}
+
+{% block content %}
+<form method="post">
+  {% include "base_form_contents.html" %}
+  <button
+    class="bg-green-600 text-neutral-800 active:bg-neutral-100 font-bold rounded ease-linear transition-all duration-150">Sign
+    In</button>
+  <a href="/"
+    class="bg-red-600 text-neutral-800 active:bg-neutral-100 font-bold rounded ease-linear transition-all duration-150"
+    role="button">Cancel</a>
+</form>
+{% endblock %}

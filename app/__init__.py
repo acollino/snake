@@ -32,10 +32,12 @@ def init_app(envFile="dev.env"):
 
         from app.home import home_bp
         from app.daily_snake import daily_snake_bp
+        from app.user import user_bp
 
         # Register blueprints. If needed, url_prefix param can be set to append a string (ie '/users') to the route url.
 
         app.register_blueprint(home_bp)
-        app.register_blueprint(daily_snake_bp, url_prefix="/")
+        app.register_blueprint(daily_snake_bp)
+        app.register_blueprint(user_bp)
 
         return app
