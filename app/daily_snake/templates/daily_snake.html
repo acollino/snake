@@ -1,7 +1,14 @@
-<script src="{{ url_for('daily_snake.static', filename='daily_snake.js') }}" defer></script>
-<div class="flex flex-col items-center">
-  <div class="text-lg mb-4">Snake of the day!</div>
+<script src="{{ url_for('daily_snake.static', filename='daily_snake.js') }}" type="module" defer></script>
+<div class="flex flex-col items-center rounded-lg border-8 border-blue-900 p-4">
+  <div class="text-xl mb-4 font-bold">Snake of the day!</div>
   <div id="snake-name"></div>
   <div id="snake-scientific" class="italic"></div>
-  <img id="snake-image" class="h-60 w-60 rounded-full object-cover mt-4"></img>
+  <img id="snake-image" class="w-60 rounded-full object-cover my-4"></img>
+  <div class="text-lg mb-4">More Information:</div>
+  <ul>
+    <li id="photographer">Photo Credit: </li>
+    <li><a id="license" target="_blank">License: CC </a></li>
+    <li><a id="source" target="_blank">Photo Source</a></li>
+    <li><a id="wiki" target="_blank">Species on Wikipedia</a></li>
+  </ul>
 </div>
