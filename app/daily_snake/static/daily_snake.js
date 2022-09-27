@@ -172,19 +172,23 @@ function selectINatURL() {
 }
 
 // Add the daily snake image and title to the page
-function createSnakeDOM(title, url) {
-  imageholder = document.querySelector("#snake-image");
-  textholder = document.querySelector("#snake-name");
+function createSnakeDOM(url, name, scientific) {
+  imageHolder = document.querySelector("#snake-image");
+  commonNameHolder = document.querySelector("#snake-name");
+  properNameHolder = document.querySelector("#snake-scientific");
   // snakeContainer = document.createElement("div");
-  snakeImage = document.createElement("img");
-  snakeImage.setAttribute("src", url);
-  snakeImage.classList.add("h-60", "w-60", "rounded-full", "object-cover");
-  snakeTitle = document.createElement("h1");
-  snakeTitle.textContent = title;
+  // snakeImage = document.createElement("img");
+  // snakeImage.setAttribute("src", url);
+  // snakeImage.classList.add("h-60", "w-60", "rounded-full", "object-cover");
+  // snakeTitle = document.createElement("h1");
+  imageHolder.setAttribute("src", url);
+  commonNameHolder.textContent = name;
+  properNameHolder.textContent = scientific;
+  // snakeTitle.textContent = title;
   // snakeContainer.append(snakeTitle);
   // snakeContainer.append(snakeImage);
-  textholder.append(snakeTitle);
-  imageholder.append(snakeImage);
+  // textholder.append(snakeTitle);
+  // imageholder.append(snakeImage);
 }
 
 // Select or retrieve the daily snake and load its image.
@@ -194,7 +198,7 @@ async function loadDailySnakeImage() {
   let dailySnake = getStoredSnake().snake;
   let title = `${dailySnake.commonName}, ${dailySnake.scientificName}`;
   let url = selectINatURL();
-  createSnakeDOM(title, url);
+  createSnakeDOM(url, dailySnake.commonName, dailySnake.scientificName);
 }
 
 // A limited recursive loop to retry loading the daily image, allowing
