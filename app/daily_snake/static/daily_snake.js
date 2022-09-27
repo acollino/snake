@@ -173,14 +173,18 @@ function selectINatURL() {
 
 // Add the daily snake image and title to the page
 function createSnakeDOM(title, url) {
-  snakeContainer = document.createElement("div");
+  imageholder = document.querySelector("#snake-image");
+  textholder = document.querySelector("#snake-name");
+  // snakeContainer = document.createElement("div");
   snakeImage = document.createElement("img");
   snakeImage.setAttribute("src", url);
+  snakeImage.classList.add("h-60", "w-60", "rounded-full", "object-cover");
   snakeTitle = document.createElement("h1");
   snakeTitle.textContent = title;
-  snakeContainer.append(snakeTitle);
-  snakeContainer.append(snakeImage);
-  document.body.append(snakeContainer);
+  // snakeContainer.append(snakeTitle);
+  // snakeContainer.append(snakeImage);
+  textholder.append(snakeTitle);
+  imageholder.append(snakeImage);
 }
 
 // Select or retrieve the daily snake and load its image.

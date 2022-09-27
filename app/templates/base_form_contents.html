@@ -1,0 +1,28 @@
+{{ form.hidden_tag() }}
+<div class="flex">
+  <div class="flex flex-col">
+    {% for field in form if field.short_name != 'csrf_token' %}
+    {% if field.errors%}
+    {{ field.label(class_="h-8 p-1 border-4 border-red-500") }}
+    {% else %}
+    {{ field.label(class_="h-8 p-1") }}
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div class="flex flex-col">
+    {% for field in form if field.short_name != 'csrf_token' %}
+    {% if field.errors%}
+    {{ field(class_="h-6 m-1 p-1 text-black border-4 border-red-500") }}
+    {% else %}
+    {{ field(class_="h-6 m-1 p-1 text-black") }}
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% if form.errors %}
+<div class="border border-4 border-red-500">
+  {% for error_message in form.errors.values() %}
+  <div class="font-bold">Error: {{error_message}}</div>
+  {% endfor %}
+</div>
+{% endif %}
