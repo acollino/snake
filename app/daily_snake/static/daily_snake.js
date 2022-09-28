@@ -14,10 +14,8 @@ async function getSnakeArray() {
   if (snakeArray === null || JSON.parse(snakeArray).length === 0) {
     let resp = await fetch("/get/snakearray");
     let fullSnakeArray = await resp.json();
-    if (!(fullSnakeArray instanceof Array)) {
-      console.log(fullSnakeArray);
-      throw new Error("Error obtaining array from API Ninjas");
-    }
+    console.log(fullSnakeArray);
+    throw new Error("Error obtaining array from API Ninjas");
     let namesOnlyArray = extractSnakeNames(fullSnakeArray);
     localStorage.setItem("snakeArray", JSON.stringify(namesOnlyArray));
     return namesOnlyArray;
