@@ -40,7 +40,7 @@ def get_snake_array():
         return jsonify(resp.json())
     else:
         resp.raise_for_status()
-        return jsonify({"error": "something went wrong"})
+        return jsonify({"error": resp.json()})
 
 
 def pick_snake(snake_list):
