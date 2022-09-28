@@ -2,6 +2,10 @@
 
 {% block title %}Snake Game{% endblock %}
 
+{% block head %}
+<script src="{{ url_for('home.static', filename='home_buttons.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
 <div class="flex flex-col h-screen">
   <div class="flex px-8 py-4">
@@ -11,10 +15,10 @@
     <div>Logout</div>
     {% else %}
     <div class="flex">
-      <div
+      <div id="login-btn"
         class="bg-blue-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-blue-900">
         Login</div>
-      <div
+      <div id="signup-btn"
         class="bg-purple-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-purple-900">
         Sign Up</div>
     </div>
@@ -24,6 +28,12 @@
     <div>User Stats Holder</div>
     <div class="grow text-center">Game Zone Holder</div>
     {% include 'daily_snake.html' %}
+  </div>
+  <div class="w-60 hidden absolute top-0 right-0" id="login-form">
+    {% include 'login.html' %}
+  </div>
+  <div class="w-60 hidden absolute top-0 right-0" id="signup-form">
+    {% include 'signup.html' %}
   </div>
 </div>
 {% endblock %}
