@@ -9,8 +9,16 @@ signupBtn.addEventListener("click", () => {
   signupForm.classList.remove("hidden");
 });
 
+signupBtn.addEventListener("mouseleave", () => {
+  hideForm(signupForm);
+});
+
 loginBtn.addEventListener("click", () => {
   loginForm.classList.remove("hidden");
+});
+
+loginBtn.addEventListener("mouseleave", () => {
+  hideForm(loginForm);
 });
 
 signupForm.addEventListener("mouseleave", () => {
@@ -24,7 +32,7 @@ loginForm.addEventListener("mouseleave", () => {
 function hideForm(form) {
   formInUseTimer = setTimeout(function () {
     form.classList.add("hidden");
-  }, 200);
+  }, 500);
 }
 
 signupForm.addEventListener("mouseenter", function (e) {
