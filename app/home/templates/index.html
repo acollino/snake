@@ -2,7 +2,41 @@
 
 {% block title %}Snake Game{% endblock %}
 
+{% block head %}
+<script src="{{ url_for('home.static', filename='home_buttons.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
-<div>Hello World!</div>
-{% include 'daily_snake.html' %}
+<div class="flex flex-col h-screen">
+  <div class="flex px-8 py-4">
+    <div class="material-symbols-outlined text-4xl">menu</div>
+    <div class="sigmar text-4xl grow text-center">Snake Game</div>
+    {% if session["user"] %}
+    <a href="/logout"
+      class="bg-blue-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-blue-900">Logout</a>
+    {% else %}
+    <div class="flex">
+      <div id="login-btn"
+        class="bg-blue-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-blue-900">
+        Login</div>
+      <div id="signup-btn"
+        class="bg-purple-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-purple-900">
+        Sign Up</div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="flex mx-8 my-4 grow">
+    <div>User Stats Holder</div>
+    <div class="grow text-center">Game Zone Holder</div>
+    {% include 'daily_snake.html' %}
+  </div>
+  <div class="hidden absolute pt-4 px-4 top-14 right-8 bg-slate-800 border-4 border-blue-900 rounded-lg"
+    id="login-form">
+    {% include 'login.html' %}
+  </div>
+  <div class="hidden absolute pt-4 px-4 top-14 right-8 bg-slate-800 border-4 border-purple-900 rounded-lg"
+    id="signup-form">
+    {% include 'signup.html' %}
+  </div>
+</div>
 {% endblock %}

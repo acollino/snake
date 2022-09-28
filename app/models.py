@@ -10,11 +10,14 @@ class User(db.Model):
 
     @classmethod
     def signup(User, username, password):
-        newUser = User(username, bcrypt.generate_password_hash(password))
+        new_user = User(
+            username=username,
+            password=bcrypt.generate_password_hash(password).decode("UTF-8"),
+        )
         try:
-            db.session.add(newUser)
+            db.session.add(new_user)
             db.session.commit()
-            return newUser
+            return new_user
         except BaseException as err:
             db.session.rollback()
             print(f"Unexpected Error: {err}, {type(err)}")
@@ -24,7 +27,6 @@ class User(db.Model):
     def authenticate(User, username, password):
         user_record = User.query.filter(User.username == username).first()
         if user_record:
-            hashed_password = bcrypt.generate_password_hash(password)
-            if user_record.password == hashed_password:
+            if bcrypt.check_password_hash(user_record.password, password):
                 return user_record
         return False

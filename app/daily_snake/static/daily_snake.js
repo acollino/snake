@@ -1,3 +1,5 @@
+import { CreativeCommonsGenerator } from "./creative_commons.js";
+
 class SnakeError extends Error {
   constructor(message) {
     super(message);
@@ -117,6 +119,7 @@ async function getINaturalistURLs() {
     let photos = parseINatResults(resultOptions);
     if (photos.length > 0) {
       storedSnake.urls = photos;
+      storedSnake.snake.scientificName = resultOptions[0].record.matched_term;
       localStorage.setItem("dailySnake", JSON.stringify(storedSnake));
     } else {
       throw new SnakeError(
@@ -156,35 +159,45 @@ function confirmPhotoUsable(photoObj) {
 // have relatively few photos (making a random photo selection more risky)
 function selectINatURL() {
   let dailySnake = getStoredSnake();
-  let dailyURL = dailySnake.dailyURL;
-  if (!dailyURL) {
+  let dailyPhoto = dailySnake.dailyPhoto;
+  if (!dailyPhoto) {
     let photos = dailySnake.urls;
     if (photos.length === 0) {
       throw new SnakeError("The stored snake is out of URLs to try.");
     } else {
-      let targetPhotoURL = photos.shift().photo.original_url;
-      dailySnake.dailyURL = targetPhotoURL;
+      let targetPhoto = photos.shift();
+      dailySnake.dailyPhoto = targetPhoto;
       localStorage.setItem("dailySnake", JSON.stringify(dailySnake));
-      return targetPhotoURL;
+      return targetPhoto.photo.original_url;
     }
   }
-  return dailyURL;
+  return dailyPhoto.photo.original_url;
 }
 
 // Add the daily snake image and title to the page
-function createSnakeDOM(title, url) {
-  imageholder = document.querySelector("#snake-image");
-  textholder = document.querySelector("#snake-name");
-  // snakeContainer = document.createElement("div");
-  snakeImage = document.createElement("img");
-  snakeImage.setAttribute("src", url);
-  snakeImage.classList.add("h-60", "w-60", "rounded-full", "object-cover");
-  snakeTitle = document.createElement("h1");
-  snakeTitle.textContent = title;
-  // snakeContainer.append(snakeTitle);
-  // snakeContainer.append(snakeImage);
-  textholder.append(snakeTitle);
-  imageholder.append(snakeImage);
+function createSnakeDOM(url, name, scientific) {
+  let dailyPhoto = getStoredSnake().dailyPhoto;
+  let image = document.querySelector("#snake-image");
+  let commonName = document.querySelector("#snake-name");
+  let properName = document.querySelector("#snake-scientific");
+  let photographer = document.querySelector("#photographer");
+  let license = document.querySelector("#license");
+  let source = document.querySelector("#source");
+  let wiki = document.querySelector("#wiki");
+  image.setAttribute("src", url);
+  commonName.textContent = name;
+  properName.textContent = scientific;
+  let licenseObj = CreativeCommonsGenerator.parseAttribution(
+    dailyPhoto.photo.attribution
+  );
+  photographer.textContent += licenseObj.creator;
+  license.setAttribute("href", licenseObj.licenseLink);
+  license.textContent += licenseObj.license;
+  source.setAttribute(
+    "href",
+    `https://www.inaturalist.org/taxa/${dailyPhoto.taxon_id}`
+  );
+  wiki.setAttribute("href", `http://en.wikipedia.org/wiki/${scientific}`);
 }
 
 // Select or retrieve the daily snake and load its image.
@@ -192,9 +205,8 @@ async function loadDailySnakeImage() {
   await updateDailySnake();
   await getINaturalistURLs();
   let dailySnake = getStoredSnake().snake;
-  let title = `${dailySnake.commonName}, ${dailySnake.scientificName}`;
   let url = selectINatURL();
-  createSnakeDOM(title, url);
+  createSnakeDOM(url, dailySnake.commonName, dailySnake.scientificName);
 }
 
 // A limited recursive loop to retry loading the daily image, allowing
