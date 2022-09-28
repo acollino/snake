@@ -39,7 +39,7 @@ def get_snake_array():
     if resp.status_code == requests.codes.ok:
         return jsonify(resp.json())
     else:
-        return jsonify({"error": resp.json()})
+        return jsonify(resp.json())
 
 
 def pick_snake(snake_list):

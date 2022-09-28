@@ -14,7 +14,7 @@ async function getSnakeArray() {
   if (snakeArray === null || JSON.parse(snakeArray).length === 0) {
     let resp = await fetch("/get/snakearray");
     let fullSnakeArray = await resp.json();
-    if (fullSnakeArray.error) {
+    if (!fullSnakeArray instanceof Array) {
       console.print(fullSnakeArray);
       throw new Error("Error obtaining array from API Ninjas");
     }
@@ -72,7 +72,7 @@ function parseScientificName(snakeObj) {
 async function updateDailySnake() {
   if (checkIfOutdated()) {
     let snakeArray = await getSnakeArray();
-    let randomValue = Math.floor(Math.random() * snakeArray);
+    let randomValue = Math.floor(Math.random() * snakeArray.length);
     let randomSnake = snakeArray.splice(randomValue, 1)[0];
     localStorage.setItem("snakeArray", JSON.stringify(snakeArray));
     let dailySnake = {
