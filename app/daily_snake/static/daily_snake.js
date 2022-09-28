@@ -15,7 +15,7 @@ async function getSnakeArray() {
     let resp = await fetch("/get/snakearray");
     let fullSnakeArray = await resp.json();
     if (!fullSnakeArray instanceof Array) {
-      console.print(fullSnakeArray);
+      console.log(fullSnakeArray);
       throw new Error("Error obtaining array from API Ninjas");
     }
     let namesOnlyArray = extractSnakeNames(fullSnakeArray);
