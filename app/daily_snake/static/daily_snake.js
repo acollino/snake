@@ -14,7 +14,7 @@ async function getSnakeArray() {
   if (snakeArray === null || JSON.parse(snakeArray).length === 0) {
     let resp = await fetch("/get/snakearray");
     let fullSnakeArray = await resp.json();
-    if (!fullSnakeArray instanceof Array) {
+    if (!(fullSnakeArray instanceof Array)) {
       console.log(fullSnakeArray);
       throw new Error("Error obtaining array from API Ninjas");
     }
