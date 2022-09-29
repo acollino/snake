@@ -36,7 +36,8 @@ def get_snake_array():
     resp = requests.get(
         "https://api.api-ninjas.com/v1/animals", params=params, headers=headers
     )
-    return jsonify({"headers": headers, "resp": resp.json(), "env": os.environ})
+    envs = [f"{k}: {v}" for k, v in sorted(os.environ.items())]
+    return jsonify({"headers": headers, "resp": resp.json(), "env": envs})
     if resp.status_code == requests.codes.ok:
         return jsonify(resp.json())
     else:
