@@ -13,11 +13,11 @@ async function getSnakeArray() {
   let snakeArray = localStorage.getItem("snakeArray");
   if (snakeArray === null || JSON.parse(snakeArray).length === 0) {
     let resp = await fetch("/get/snakearray");
-    if (!(resp instanceof Array) || resp.length === 0) {
+    let fullSnakeArray = await resp.json();
+    if (!(fullSnakeArray instanceof Array) || fullSnakeArray.length === 0) {
       console.log(fullSnakeArray);
       throw new Error("Error obtaining array from API Ninjas");
     }
-    let fullSnakeArray = await resp.json();
     let namesOnlyArray = extractSnakeNames(fullSnakeArray);
     localStorage.setItem("snakeArray", JSON.stringify(namesOnlyArray));
     return namesOnlyArray;
