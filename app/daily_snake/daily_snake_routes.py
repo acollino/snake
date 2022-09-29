@@ -32,7 +32,7 @@ from app.daily_snake import daily_snake_bp
 def get_snake_array():
     """Get the name of the snake of the day from the API-Ninjas snake list."""
     params = {"name": "snake"}
-    headers = {"X-Api-Key": os.getenv("Ninjas-Api-Key", "")}
+    headers = {"X-Api-Key": os.getenv("NINJAS_API_KEY", "")}
     resp = requests.get(
         "https://api.api-ninjas.com/v1/animals", params=params, headers=headers
     )
