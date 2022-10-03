@@ -12,7 +12,7 @@ class SnakeError extends Error {
 async function getSnakeArray() {
   let snakeArray = localStorage.getItem("snakeArray");
   if (snakeArray === null || JSON.parse(snakeArray).length === 0) {
-    let resp = await fetch("/get/snakearray");
+    let resp = await fetch("/snakearray", { method: "POST" });
     let fullSnakeArray = await resp.json();
     let namesOnlyArray = extractSnakeNames(fullSnakeArray);
     localStorage.setItem("snakeArray", JSON.stringify(namesOnlyArray));
