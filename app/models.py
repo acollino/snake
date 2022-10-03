@@ -1,5 +1,11 @@
 from app import db, bcrypt
 
+match_users = db.Table(
+    "match_users",
+    db.Column("match_id", db.Integer, db.ForeignKey("matches.id"), primary_key=True),
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
+)
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -7,6 +13,12 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Text, unique=True, nullable=False)
     password = db.Column(db.Text, nullable=False)
+    matches = db.relationship(
+        "Match",
+        secondary=match_users,
+        lazy="subquery",
+        backref=db.backref("users", lazy=True),
+    )
 
     @classmethod
     def signup(User, username, password):
@@ -30,3 +42,10 @@ class User(db.Model):
             if bcrypt.check_password_hash(user_record.password, password):
                 return user_record
         return False
+
+
+class Match(db.Model):
+    __tablename__ = "matches"
+
+    id = db.Column(db.Integer, primary_key=True)
+    winner_id = db.Column(db.Integer, db.ForeignKey("users.id"))
