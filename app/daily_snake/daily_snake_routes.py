@@ -15,5 +15,4 @@ def get_snake_array():
     if resp.status_code == requests.codes.ok:
         return jsonify(resp.json())
     else:
-        envs = [f"{k}: {v}" for k, v in sorted(os.environ.items())]
-        return jsonify({"headers": headers, "resp": resp.json(), "env": envs})
+        return jsonify({"headers": headers, "resp": resp.json()})
