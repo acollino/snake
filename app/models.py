@@ -16,7 +16,7 @@ class User(db.Model):
     matches = db.relationship(
         "Match",
         secondary=match_users,
-        lazy="subquery",
+        lazy=True,
         backref=db.backref("users", lazy=True),
     )
 
@@ -48,4 +48,8 @@ class Match(db.Model):
     __tablename__ = "matches"
 
     id = db.Column(db.Integer, primary_key=True)
+    time = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     winner_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in Match.__table__.columns}
