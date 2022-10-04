@@ -1,4 +1,3 @@
-from sys import prefix
 from app.home import home_bp
 from flask import render_template
 from app.user.user_forms import SignupForm, LoginForm
