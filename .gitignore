@@ -3,4 +3,3 @@ __pycache__
 .vscode/
 requirements-orig.txt
 *.env
-Procfile
