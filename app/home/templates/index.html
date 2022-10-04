@@ -3,7 +3,11 @@
 {% block title %}Snake Game{% endblock %}
 
 {% block head %}
+{% if session["user"] %}
+<script src="{{ url_for('home.static', filename='home_stats.js') }}" defer></script>
+{% else %}
 <script src="{{ url_for('home.static', filename='home_buttons.js') }}" defer></script>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -26,7 +30,13 @@
     {% endif %}
   </div>
   <div class="flex mx-8 my-4 grow">
-    <div>User Stats Holder</div>
+    <div id="stats" class="flex flex-col w-60">
+      {% if session["user"] %}
+      <div class="text-center font-bold underline text-xl">Your Stats</div>
+      {% else %}
+      <div class="text-center font-bold text-lg">You must be signed in to view your stats.</div>
+      {% endif %}
+    </div>
     <div class="grow text-center">Game Zone Holder</div>
     {% include 'daily_snake.html' %}
   </div>
