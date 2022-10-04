@@ -68,7 +68,7 @@ function parseScientificName(snakeObj) {
 async function updateDailySnake() {
   if (checkIfOutdated()) {
     let snakeArray = await getSnakeArray();
-    let randomValue = Math.floor(Math.random() * snakeArray);
+    let randomValue = Math.floor(Math.random() * snakeArray.length);
     let randomSnake = snakeArray.splice(randomValue, 1)[0];
     localStorage.setItem("snakeArray", JSON.stringify(snakeArray));
     let dailySnake = {
