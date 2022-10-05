@@ -31,6 +31,7 @@ def init_app(config="ProdConfig"):
         from app.home import home_bp
         from app.daily_snake import daily_snake_bp
         from app.user import user_bp
+        from app.game import game_bp
 
         # Register blueprints. If needed, url_prefix param can be set to append a string (ie '/users')
         # to the route url.
@@ -38,5 +39,6 @@ def init_app(config="ProdConfig"):
         app.register_blueprint(home_bp)
         app.register_blueprint(daily_snake_bp)
         app.register_blueprint(user_bp)
+        app.register_blueprint(game_bp)
 
         return app
