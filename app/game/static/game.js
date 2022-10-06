@@ -1,6 +1,7 @@
-const CANVAS = document.querySelector("#board");
-const START = document.querySelector("#start-btn");
-const CONTEXT = CANVAS.getContext("2d");
+const canvas = document.querySelector("#board");
+const startBtn = document.querySelector("#start-btn");
+const gameContainer = document.querySelector("#game-container");
+const canvasContext = canvas.getContext("2d");
 const SNAKE_SIZE = 20;
 const SNAKE_LENGTH = 10;
 const SNAKE_COLOR = "green";
@@ -13,12 +14,12 @@ class SnakeGame {
   }
 
   clearBoard() {
-    CONTEXT.clearRect(0, 0, CANVAS.width, CANVAS.height);
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
   }
 
   createSnake() {
-    let midpointX = CANVAS.width / 2 - SNAKE_SIZE / 2;
-    let midpointY = CANVAS.height / 2 - SNAKE_SIZE / 2;
+    let midpointX = canvas.width / 2 - SNAKE_SIZE / 2;
+    let midpointY = canvas.height / 2 - SNAKE_SIZE / 2;
     this.gameSnake = new Snake(
       SNAKE_SIZE,
       SNAKE_COLOR,
@@ -117,8 +118,8 @@ class SnakeSegment {
   }
 
   drawSegment() {
-    CONTEXT.fillStyle = this.color;
-    CONTEXT.fillRect(this.x, this.y, this.size, this.size);
+    canvasContext.fillStyle = this.color;
+    canvasContext.fillRect(this.x, this.y, this.size, this.size);
   }
 
   update() {
@@ -154,16 +155,13 @@ class SnakeSegment {
   }
 
   checkCollision() {
-    let collisionX = this.x <= 0 || this.x + this.size >= CANVAS.width;
-    let collisionY = this.y <= 0 || this.y + this.size >= CANVAS.height;
+    let collisionX = this.x <= 0 || this.x + this.size >= canvas.width;
+    let collisionY = this.y <= 0 || this.y + this.size >= canvas.height;
     let boundaryCollision = collisionX || collisionY;
     let nextMove = this.calculateMove();
-    let pixelsAhead = CONTEXT.getImageData(
-      nextMove.newX,
-      nextMove.newY,
-      this.size,
-      this.size
-    ).data.subarray(0, 4);
+    let pixelsAhead = canvasContext
+      .getImageData(nextMove.newX, nextMove.newY, this.size, this.size)
+      .data.subarray(0, 4);
     let pixelCollision = pixelsAhead.some((color) => {
       return color != 0;
     });
@@ -172,6 +170,30 @@ class SnakeSegment {
 }
 
 let currentGame = new SnakeGame();
+
+async function startRecording() {
+  let startResp = await fetch("/start_match", { method: "POST" });
+  let startData = await startResp.json();
+  if (startData.recorded) {
+    currentGame.gameID = startData.match_id;
+  }
+}
+
+async function updateMatchInfo() {
+  if (currentGame.gameID) {
+    let updateResp = await fetch(`/update_match/${currentGame.gameID}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        score: currentGame.gameSnake.segments.length - 1,
+      }),
+    });
+    let updateData = await updateResp.json();
+    if (!updateData.recorded) {
+      // notify user that stats aren't recorded, but don't stop game
+    }
+  }
+}
 
 function updateBoard() {
   currentGame.clearBoard();
@@ -186,14 +208,18 @@ function startGame() {
     stopGame();
   }
   resetGame();
+  startRecording();
   currentGame.gameRunning = true;
   currentGame.interval = setInterval(updateBoard, 60);
-  CANVAS.focus();
+  canvas.focus();
 }
 
 function stopGame() {
   clearInterval(currentGame.interval);
+  updateMatchInfo();
   currentGame.gameRunning = false;
+  let stopEvent = new Event("gameover");
+  gameContainer.dispatchEvent(stopEvent);
 }
 
 function resetGame() {
@@ -201,9 +227,9 @@ function resetGame() {
   currentGame.createSnake();
 }
 
-START.addEventListener("click", startGame);
+startBtn.addEventListener("click", startGame);
 
-CANVAS.addEventListener("keydown", (event) => {
+canvas.addEventListener("keydown", (event) => {
   if (currentGame.gameRunning) {
     let snakeDir = currentGame.gameSnake.getDirection();
     if (event.key == "ArrowLeft" && snakeDir != "right") {
