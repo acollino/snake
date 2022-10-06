@@ -2,8 +2,8 @@ const canvas = document.querySelector("#board");
 const startBtn = document.querySelector("#start-btn");
 const gameContainer = document.querySelector("#game-container");
 const canvasContext = canvas.getContext("2d");
-const SNAKE_SIZE = 20;
-const SNAKE_LENGTH = 10;
+const SEGMENT_SIZE = 20;
+const SNAKE_LENGTH = 1;
 const SNAKE_COLOR = "green";
 const STARTING_DIR = "up";
 
@@ -18,24 +18,20 @@ class SnakeGame {
   }
 
   createSnake() {
-    let midpointX = canvas.width / 2 - SNAKE_SIZE / 2;
-    let midpointY = canvas.height / 2 - SNAKE_SIZE / 2;
-    this.gameSnake = new Snake(
-      SNAKE_SIZE,
-      SNAKE_COLOR,
-      midpointX,
-      midpointY,
-      SNAKE_LENGTH
-    );
+    let startingPoint = {
+      x: canvas.width / 2 - SEGMENT_SIZE / 2,
+      y: canvas.height / 2 - SEGMENT_SIZE / 2,
+    };
+    this.gameSnake = new Snake(SNAKE_COLOR, startingPoint, SNAKE_LENGTH);
   }
 }
 
 class Snake {
-  constructor(size, color, x, y, length) {
-    this.segmentSize = size;
+  constructor(color, startingPoint, startingLength) {
     this.segmentColor = color;
-    this.segments = [new SnakeSegment(size, color, x, y, STARTING_DIR)];
-    for (let x = 0; x < length - 1; x++) {
+    this.speed = SEGMENT_SIZE;
+    this.segments = [new SnakeSegment(color, startingPoint, STARTING_DIR)];
+    for (let x = 0; x < startingLength - 1; x++) {
       this.addSegment();
     }
     this.turnMap = new Map();
@@ -44,7 +40,7 @@ class Snake {
   update() {
     for (let i = 0; i < this.segments.length; i++) {
       let currentSegment = this.segments[i];
-      currentSegment.update();
+      currentSegment.update(this.speed);
       if (currentSegment.turning) {
         currentSegment.turning = false;
         if (i < this.segments.length) {
@@ -64,7 +60,20 @@ class Snake {
   }
 
   checkCollision() {
-    return this.segments[0].checkCollision();
+    let snakeHead = this.segments[0];
+    let collisionX =
+      snakeHead.x <= 0 || snakeHead.x + SEGMENT_SIZE >= canvas.width;
+    let collisionY =
+      snakeHead.y <= 0 || snakeHead.y + SEGMENT_SIZE >= canvas.height;
+    let boundaryCollision = collisionX || collisionY;
+    let nextMove = snakeHead.calculateMove(this.speed);
+    let pixelsAhead = canvasContext
+      .getImageData(nextMove.newX, nextMove.newY, SEGMENT_SIZE, SEGMENT_SIZE)
+      .data.subarray(0, 4);
+    let pixelCollision = pixelsAhead.some((color) => {
+      return color != 0;
+    });
+    return boundaryCollision || pixelCollision;
   }
 
   getDirection() {
@@ -81,37 +90,29 @@ class Snake {
     let { x, y } = lastSegment;
     switch (lastSegment.direction) {
       case "left":
-        x += this.segmentSize;
+        x += SEGMENT_SIZE;
         break;
       case "right":
-        x -= this.segmentSize;
+        x -= SEGMENT_SIZE;
         break;
       case "up":
-        y += this.segmentSize;
+        y += SEGMENT_SIZE;
         break;
       case "down":
-        y -= this.segmentSize;
+        y -= SEGMENT_SIZE;
         break;
     }
     this.segments.push(
-      new SnakeSegment(
-        this.segmentSize,
-        this.segmentColor,
-        x,
-        y,
-        lastSegment.direction
-      )
+      new SnakeSegment(this.segmentColor, { x, y }, lastSegment.direction)
     );
   }
 }
 
 class SnakeSegment {
-  constructor(size, color, x, y, direction) {
-    this.size = size;
+  constructor(color, spawnPoint, direction) {
     this.color = color;
-    this.x = x;
-    this.y = y;
-    this.speed = Math.floor(size / 1);
+    this.x = spawnPoint.x;
+    this.y = spawnPoint.y;
     this.direction = direction;
     this.turning = false;
     this.drawSegment();
@@ -119,21 +120,17 @@ class SnakeSegment {
 
   drawSegment() {
     canvasContext.fillStyle = this.color;
-    canvasContext.fillRect(this.x, this.y, this.size, this.size);
+    canvasContext.fillRect(this.x, this.y, SEGMENT_SIZE, SEGMENT_SIZE);
   }
 
-  update() {
-    this.move();
+  update(speed) {
+    let updatedValues = this.calculateMove(speed);
+    this.x = updatedValues.newX;
+    this.y = updatedValues.newY;
     this.drawSegment();
   }
 
-  move() {
-    let updatedValues = this.calculateMove();
-    this.x = updatedValues.newX;
-    this.y = updatedValues.newY;
-  }
-
-  calculateMove() {
+  calculateMove(speed) {
     let directionAdjustX = 0;
     let directionAdjustY = 0;
     if (this.direction == "right" || this.direction == "left") {
@@ -149,23 +146,9 @@ class SnakeSegment {
         directionAdjustY = -1;
       }
     }
-    let newX = this.x + this.speed * directionAdjustX;
-    let newY = this.y + this.speed * directionAdjustY;
+    let newX = this.x + speed * directionAdjustX;
+    let newY = this.y + speed * directionAdjustY;
     return { newX, newY };
-  }
-
-  checkCollision() {
-    let collisionX = this.x <= 0 || this.x + this.size >= canvas.width;
-    let collisionY = this.y <= 0 || this.y + this.size >= canvas.height;
-    let boundaryCollision = collisionX || collisionY;
-    let nextMove = this.calculateMove();
-    let pixelsAhead = canvasContext
-      .getImageData(nextMove.newX, nextMove.newY, this.size, this.size)
-      .data.subarray(0, 4);
-    let pixelCollision = pixelsAhead.some((color) => {
-      return color != 0;
-    });
-    return boundaryCollision || pixelCollision;
   }
 }
 
