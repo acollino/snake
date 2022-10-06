@@ -1,10 +1,14 @@
 from app import db, bcrypt
 
-match_users = db.Table(
-    "match_users",
-    db.Column("match_id", db.Integer, db.ForeignKey("matches.id"), primary_key=True),
-    db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
-)
+
+class AssociationMatchUser(db.Model):
+    __tablename__ = "association_match_user"
+
+    match_id = db.Column(db.Integer, db.ForeignKey("matches.id"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    score = db.Column(db.Integer, nullable=False)
+
+    # relationships
 
 
 class User(db.Model):
@@ -15,7 +19,7 @@ class User(db.Model):
     password = db.Column(db.Text, nullable=False)
     matches = db.relationship(
         "Match",
-        secondary=match_users,
+        secondary="association_match_user",
         lazy=True,
         backref=db.backref("users", lazy=True),
     )
