@@ -1,6 +1,6 @@
 from flask import render_template, redirect, session, jsonify
 from app.user.user_forms import SignupForm, LoginForm
-from app.models import User, Match
+from app.models import User, Match, AssociationMatchUser
 from app.user import user_bp
 from app import db
 
@@ -35,22 +35,34 @@ def logout():
 
 @user_bp.route("/stats", methods=["POST"])
 def user_stats():
+    """Retrieves the user's stats and recent matches,
+    converting them to dicts to send them as JSON."""
     if "user" in session:
         curr_user = User.query.get(session["user"])
         if curr_user:
-
             match_history_query = (
-                Match.query.join(User, Match.users).order_by(Match.time).limit(50).all()
+                Match.query.with_entities(
+                    Match.time, Match.winner_id, AssociationMatchUser.score
+                )
+                .join(AssociationMatchUser, Match.id == AssociationMatchUser.match_id)
+                .filter(AssociationMatchUser.user_id == curr_user.id)
+                .order_by(Match.time.desc())
+                .limit(5)
+                .all()
             )
-            match_history = [match.to_dict() for match in match_history_query]
+            match_history = [match._asdict() for match in match_history_query]
             match_counts = (
                 Match.query.with_entities(
                     db.func.count(Match.winner_id)
                     .filter(Match.winner_id == curr_user.id)
                     .label("win"),
-                    db.func.sum(Match.winner_id).label("total"),
+                    db.func.count(AssociationMatchUser.match_id).label("total"),
+                    db.func.coalesce(db.func.max(AssociationMatchUser.score), 0).label(
+                        "high_score"
+                    ),
                 )
-                .join(User, Match.users)
+                .join(AssociationMatchUser, Match.id == AssociationMatchUser.match_id)
+                .filter(AssociationMatchUser.user_id == curr_user.id)
                 .first()
                 ._asdict()
             )
