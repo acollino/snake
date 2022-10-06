@@ -5,7 +5,7 @@ from app import init_app, db
 from app.models import AssociationMatchUser, Match, User
 
 load_dotenv()
-app = init_app("DevConfig")
+app = init_app("ProdConfig")
 app.app_context().push()
 
 AssociationMatchUser.__table__.drop(db.engine)

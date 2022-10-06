@@ -28,7 +28,7 @@ class ProdConfig(Config):
     SQLALCHEMY_DATABASE_URI = environ.get("DATABASE_URL", "").replace(
         "postgres://", "postgresql://"
     )
-    # replace because render uses 'postgres' - not supported by SQLAlchemy
+    # replace because hosting sites use 'postgres' - not supported by SQLAlchemy
     SQLALCHEMY_ECHO = False
     DEBUG = False
 
