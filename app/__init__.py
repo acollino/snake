@@ -23,11 +23,6 @@ def init_app(config="ProdConfig"):
     """
     with app.app_context():
 
-        # Import models after the db has been initialized, before creating tables
-        from app.models import User, Match
-
-        db.create_all()
-
         from app.home import home_bp
         from app.daily_snake import daily_snake_bp
         from app.user import user_bp
