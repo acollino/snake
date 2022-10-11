@@ -3,10 +3,12 @@ const startBtn = document.querySelector("#start-btn");
 const gameContainer = document.querySelector("#game-container");
 const canvasContext = canvas.getContext("2d");
 const SEGMENT_SIZE = 20;
-const SNAKE_LENGTH = 1;
+const SEGMENT_DIVISION = 4;
+const SNAKE_LENGTH = 25;
 const SNAKE_COLOR = [0, 200, 0, 1];
 const INITIAL_DIR = "up";
 const FOOD_COLOR = [0, 0, 255, 1];
+const FOOD_LOCATION = [];
 
 // Allows placement of a piece on the board in a grid of segment_size tiles
 function convertWithSegments(dimension) {
@@ -43,6 +45,33 @@ function clearSegment(originPoint) {
   );
 }
 
+function clearBetween(oldPoint, newPoint) {
+  if (oldPoint.x === newPoint.x) {
+    let startingY = oldPoint.y;
+    if (newPoint.y < oldPoint.y) {
+      startingY = newPoint.y;
+    }
+    canvasContext.clearRect(
+      oldPoint.x,
+      startingY,
+      SEGMENT_SIZE,
+      Math.abs(oldPoint.y - newPoint.y)
+    );
+  }
+  if (oldPoint.y === newPoint.y) {
+    let startingX = oldPoint.x;
+    if (newPoint.x < oldPoint.x) {
+      startingX = newPoint.x;
+    }
+    canvasContext.clearRect(
+      startingX,
+      oldPoint.y,
+      Math.abs(oldPoint.x - newPoint.x),
+      SEGMENT_SIZE
+    );
+  }
+}
+
 class gameItem {
   constructor(color, spawnPoint) {
     this.x = spawnPoint.x;
@@ -62,6 +91,8 @@ class SnakeGame {
     this.createSnake();
     this.gameRunning = false;
     this.inputReady = true;
+    this.inputQueue = new Queue();
+    this.cycleCounter = 0;
   }
 
   clearEntireBoard() {
@@ -69,9 +100,11 @@ class SnakeGame {
   }
 
   createSnake() {
+    let usableWidth = convertWithSegments(canvas.width);
+    let usableHeight = convertWithSegments(canvas.height);
     let startingPoint = {
-      x: convertWithSegments(canvas.width) / 2,
-      y: convertWithSegments(canvas.height) / 2,
+      x: Math.floor(usableWidth / SEGMENT_SIZE / 2) * SEGMENT_SIZE,
+      y: Math.floor(usableHeight / SEGMENT_SIZE / 2) * SEGMENT_SIZE,
     };
     this.gameSnake = new Snake(
       toColorString(SNAKE_COLOR),
@@ -84,7 +117,7 @@ class SnakeGame {
 class Snake {
   constructor(color, startingPoint, startingLength) {
     this.segmentColor = color;
-    this.speed = SEGMENT_SIZE;
+    this.speed = SEGMENT_SIZE / SEGMENT_DIVISION;
     this.segments = [new SnakeSegment(color, startingPoint, INITIAL_DIR)];
     for (let x = 0; x < startingLength - 1; x++) {
       this.addSegment();
@@ -100,13 +133,31 @@ class Snake {
     return this.segments[this.segments.length - 1];
   }
 
+  isDirectionValid(newDirection) {
+    if (this.getDirection() === "up") {
+      return newDirection !== "down";
+    }
+    if (this.getDirection() === "down") {
+      return newDirection !== "up";
+    }
+    if (this.getDirection() === "left") {
+      return newDirection !== "right";
+    }
+    if (this.getDirection() === "right") {
+      return newDirection !== "left";
+    }
+  }
+
   update() {
     if (this.eatFood) {
       this.addSegment();
       this.eatFood = false;
+      let toClear = FOOD_LOCATION.pop();
+      clearSegment(toClear);
       SnakeFood.spawnFood();
     }
-    let priorTailPosition = { x: this.getTail().x, y: this.getTail().y };
+    let oldDirection = this.getTail().direction;
+    let oldTailPoint = this.getEndingClearPoint(oldDirection);
     for (let i = 0; i < this.segments.length; i++) {
       let currentSegment = this.segments[i];
       currentSegment.update(this.speed);
@@ -118,15 +169,36 @@ class Snake {
       }
       if (this.turnMap.has(i)) {
         // Meant for moving at fractions of segment size rather than by full size
-        // let matchX = currentSegment.x == this.segments[i - 1].x;
-        // let matchY = currentSegment.y == this.segments[i - 1].y;
-        // if (matchX || matchY) {}
-        currentSegment.turning = true;
-        currentSegment.direction = this.turnMap.get(i);
-        this.turnMap.delete(i);
+        let matchX = currentSegment.x == this.segments[i - 1].x;
+        let matchY = currentSegment.y == this.segments[i - 1].y;
+        if (matchX || matchY) {
+          currentSegment.turning = true;
+          currentSegment.direction = this.turnMap.get(i);
+          this.turnMap.delete(i);
+        }
       }
     }
-    clearSegment(priorTailPosition);
+    let newTailPoint = this.getEndingClearPoint(oldDirection);
+    clearBetween(oldTailPoint, newTailPoint);
+  }
+
+  determinePointToClear(newPosition, oldDirection) {
+    let pointToClear = { x: newPosition.x, y: newPosition.y };
+    switch (oldDirection) {
+      case "right":
+        pointToClear.x -= SEGMENT_SIZE;
+        break;
+      case "left":
+        pointToClear.x += SEGMENT_SIZE;
+        break;
+      case "up":
+        pointToClear.y += SEGMENT_SIZE;
+        break;
+      case "down":
+        pointToClear.y -= SEGMENT_SIZE;
+        break;
+    }
+    return pointToClear;
   }
 
   checkCollision() {
@@ -142,6 +214,9 @@ class Snake {
     let boundaryCollision =
       collisionLeft || collisionRight || collisionUp || collisionDown;
     let nextMove = snakeHead.calculateMove(this.speed);
+    if (snakeHead.direction === "down" || snakeHead.direction === "right") {
+      nextMove = snakeHead.calculateMove(SEGMENT_SIZE);
+    }
     let pixelsAhead = getColorInfoAtCoord(nextMove);
     if (matchesColor(pixelsAhead, FOOD_COLOR)) {
       this.eatFood = true;
@@ -160,6 +235,8 @@ class Snake {
     this.getHead().turning = true;
   }
 
+  // Gets the origin of the segment-sized square immediately
+  // behind the tail segment.
   getPositionBehindTail() {
     let lastSegment = this.getTail();
     let { x, y } = lastSegment;
@@ -175,6 +252,25 @@ class Snake {
         break;
       case "down":
         y -= SEGMENT_SIZE;
+        break;
+    }
+    return { x, y };
+  }
+
+  // Effectively, get the important point for the last segment of the tail.
+  // This will determine the zone that should be cleared after moving.
+  // If going down or right, that's just the origin of the last segment (UL corner)
+  // If left, that's the UR corner (so x + segment size)
+  // If up, that's the BL corner (so y + segment size)
+  getEndingClearPoint(direction) {
+    let lastSegment = this.getTail();
+    let { x, y } = lastSegment;
+    switch (direction) {
+      case "left":
+        x += SEGMENT_SIZE;
+        break;
+      case "up":
+        y += SEGMENT_SIZE;
         break;
     }
     return { x, y };
@@ -259,6 +355,7 @@ class SnakeFood extends gameItem {
         break;
       }
     }
+    FOOD_LOCATION.push(spawnPoint);
     new SnakeFood(toColorString(FOOD_COLOR), spawnPoint);
   }
 }
@@ -294,7 +391,16 @@ function updateBoard() {
     stopGame();
   } else {
     currentGame.gameSnake.update();
-    currentGame.inputReady = true;
+    currentGame.cycleCounter++;
+    if (currentGame.cycleCounter === SEGMENT_DIVISION) {
+      if (currentGame.inputQueue.length) {
+        let newDir = currentGame.inputQueue.dequeue();
+        if (currentGame.gameSnake.isDirectionValid(newDir)) {
+          currentGame.gameSnake.setDirection(newDir);
+        }
+      }
+      currentGame.cycleCounter = 0;
+    }
   }
 }
 
@@ -306,7 +412,7 @@ function startGame() {
   startRecording();
   currentGame.gameRunning = true;
   SnakeFood.spawnFood();
-  currentGame.snakeInterval = setInterval(updateBoard, 60);
+  currentGame.snakeInterval = setInterval(updateBoard, 25);
   canvas.focus();
 }
 
@@ -321,28 +427,25 @@ function stopGame() {
 function resetGame() {
   currentGame.clearEntireBoard();
   currentGame.createSnake();
+  currentGame.cycleCounter = 0;
+  currentGame.inputQueue = new Queue();
 }
 
 startBtn.addEventListener("click", startGame);
 
 canvas.addEventListener("keydown", (event) => {
-  if (currentGame.gameRunning && currentGame.inputReady) {
-    let snakeDir = currentGame.gameSnake.getDirection();
-    if (event.key == "ArrowLeft" && snakeDir != "right") {
-      currentGame.gameSnake.setDirection("left");
-      currentGame.inputReady = false;
+  if (currentGame.gameRunning) {
+    if (event.key == "ArrowLeft") {
+      currentGame.inputQueue.enqueue("left");
     }
-    if (event.key == "ArrowRight" && snakeDir != "left") {
-      currentGame.gameSnake.setDirection("right");
-      currentGame.inputReady = false;
+    if (event.key == "ArrowRight") {
+      currentGame.inputQueue.enqueue("right");
     }
-    if (event.key == "ArrowUp" && snakeDir != "down") {
-      currentGame.gameSnake.setDirection("up");
-      currentGame.inputReady = false;
+    if (event.key == "ArrowUp") {
+      currentGame.inputQueue.enqueue("up");
     }
-    if (event.key == "ArrowDown" && snakeDir != "up") {
-      currentGame.gameSnake.setDirection("down");
-      currentGame.inputReady = false;
+    if (event.key == "ArrowDown") {
+      currentGame.inputQueue.enqueue("down");
     }
   }
 });
