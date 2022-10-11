@@ -383,6 +383,8 @@ async function updateMatchInfo() {
     if (!updateData.recorded) {
       // notify user that stats aren't recorded, but don't stop game
     }
+    let stopEvent = new Event("gameover");
+    gameContainer.dispatchEvent(stopEvent);
   }
 }
 
@@ -420,8 +422,6 @@ function stopGame() {
   clearInterval(currentGame.snakeInterval);
   updateMatchInfo();
   currentGame.gameRunning = false;
-  let stopEvent = new Event("gameover");
-  gameContainer.dispatchEvent(stopEvent);
 }
 
 function resetGame() {
