@@ -1,7 +1,7 @@
 const canvas = document.querySelector("#board");
 const startBtn = document.querySelector("#start-btn");
 const gameContainer = document.querySelector("#game-container");
-const canvasContext = canvas.getContext("2d");
+const canvasContext = canvas.getContext("2d", { willReadFrequently: true });
 const REDRAW_DELAY = 25;
 const SEGMENT_SIZE = 20;
 const SEGMENT_DIVISION = 4;
