@@ -10,6 +10,7 @@ const SNAKE_COLOR = [0, 200, 0, 1];
 const INITIAL_DIR = "up";
 const FOOD_COLOR = [0, 0, 255, 1];
 const FOOD_LOCATION = [];
+const TIMEOUTS = [];
 
 // To function correctly, the snake must move per frame by a factor of the segment size.
 // This leads to (eventually) moving in segment-by-segment squares, allowing
@@ -52,6 +53,10 @@ function matchesColor(selectedColorArray, comparedColorArray) {
   });
 }
 
+function clearEntireBoard() {
+  canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 function clearSegment(originPoint) {
   canvasContext.clearRect(
     originPoint.x,
@@ -88,6 +93,23 @@ function clearBetween(oldPoint, newPoint) {
   }
 }
 
+function countdown() {
+  let point = { x: canvas.width / 2 - 16, y: canvas.height / 2 };
+  canvasContext.fillStyle = "black";
+  canvasContext.font = "64px sans-serif";
+  clearEntireBoard();
+  canvasContext.fillText("3", point.x, point.y);
+  TIMEOUTS.push(setTimeout(clearEntireBoard, 1000));
+  TIMEOUTS.push(
+    setTimeout(() => canvasContext.fillText("2", point.x, point.y), 1000)
+  );
+  TIMEOUTS.push(setTimeout(clearEntireBoard, 2000));
+  TIMEOUTS.push(
+    setTimeout(() => canvasContext.fillText("1", point.x, point.y), 2000)
+  );
+  TIMEOUTS.push(setTimeout(clearEntireBoard, 3000));
+}
+
 class gameItem {
   constructor(color, spawnPoint) {
     this.x = spawnPoint.x;
@@ -109,10 +131,6 @@ class SnakeGame {
     this.inputReady = true;
     this.inputQueue = new Queue();
     this.cycleCounter = 0;
-  }
-
-  clearEntireBoard() {
-    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
   }
 
   createSnake() {
@@ -379,6 +397,7 @@ class SnakeFood extends gameItem {
 }
 
 let currentGame = new SnakeGame();
+clearEntireBoard();
 
 async function startRecording() {
   let startResp = await fetch("/start_match", { method: "POST" });
@@ -437,9 +456,6 @@ function startGame() {
 }
 
 function startGameLoop() {
-  if (currentGame.gameRunning) {
-    stopGame();
-  }
   resetGame();
   startRecording();
   currentGame.gameRunning = true;
@@ -455,7 +471,7 @@ function stopGame() {
 }
 
 function resetGame() {
-  currentGame.clearEntireBoard();
+  clearEntireBoard();
   currentGame.createSnake();
   currentGame.cycleCounter = 0;
   currentGame.inputQueue = new Queue();
@@ -475,7 +491,16 @@ function gameloop(timestamp) {
   }
 }
 
-startBtn.addEventListener("click", startGameLoop);
+startBtn.addEventListener("click", () => {
+  while (TIMEOUTS.length > 0) {
+    clearTimeout(TIMEOUTS.pop());
+  }
+  if (currentGame.gameRunning) {
+    stopGame();
+  }
+  countdown();
+  TIMEOUTS.push(setTimeout(startGameLoop, 3000));
+});
 
 canvas.addEventListener("keydown", (event) => {
   if (currentGame.gameRunning) {
@@ -493,3 +518,20 @@ canvas.addEventListener("keydown", (event) => {
     }
   }
 });
+
+// For multiplayer use?
+async function submitMove(event) {
+  if (currentGame.gameRunning) {
+    let key = event.key.toLowerCase().replace("arrow", "");
+    let fetchObj = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ direction: key }),
+    };
+    let resp = await fetch("/direction", fetchObj);
+    let respData = await resp.json();
+    if (respData.recorded) {
+      currentGame.inputQueue.enqueue(respData.direction);
+    }
+  }
+}
