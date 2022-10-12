@@ -1,4 +1,4 @@
-from flask import render_template, redirect, session, jsonify
+from flask import redirect, session, jsonify, flash
 from app.user.user_forms import SignupForm, LoginForm
 from app.models import User, Match, AssociationMatchUser
 from app.user import user_bp
@@ -10,9 +10,16 @@ def signup_form():
     form = SignupForm(prefix="signup")
     if form.validate_on_submit():
         added = User.signup(form.username.data, form.password.data)
-        session["user"] = added.id
-        return redirect("/")
-    return render_template("signup.html", form=form)
+        if added:
+            session["user"] = added.id
+            return redirect("/")
+        else:
+            flash("That username is taken, please choose another.")
+    else:
+        flash(
+            "Your signup details were invalid, please ensure you've entered them correctly."
+        )
+    return redirect("/")
 
 
 @user_bp.route("/login", methods=["GET", "POST"])
@@ -23,7 +30,13 @@ def login_form():
         if user:
             session["user"] = user.id
             return redirect("/")
-    return render_template("login.html", form=form)
+        else:
+            flash("The username or password was incorrect.")
+    else:
+        flash(
+            "Your login details were invalid, please ensure you've entered them correctly."
+        )
+    return redirect("/")
 
 
 @user_bp.route("/logout", methods=["GET"])
