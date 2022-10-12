@@ -2,6 +2,8 @@ const signupForm = document.querySelector("#signup-form");
 const loginForm = document.querySelector("#login-form");
 const signupBtn = document.querySelector("#signup-btn");
 const loginBtn = document.querySelector("#login-btn");
+const signupSubmit = document.querySelector("#signup-submit");
+const loginSubmit = document.querySelector("#login-submit");
 
 let formInUseTimer;
 
