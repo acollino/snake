@@ -1,12 +1,14 @@
 <form method="post" action="/signup" class="flex flex-col items-center">
   {% import "base_form_contents.html" as form_contents %}
+  <div class="text-xl text-center mb-2 font-bold">Create Account</div>
   {{ form_contents.display_form(signup_form) }}
+  <ul id="signup-errors" class="font-bold text-red-500 mt-2 max-w-[16rem] text-center"></ul>
   <div class="my-4">
     <button id="signup-submit"
       class="bg-green-500 text-slate-800 py-1 px-2 font-bold rounded-lg border-4 border-slate-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-green-900">Sign
       Up</button>
-    <a href="/"
-      class="inline-block bg-red-400 text-slate-800 py-1 px-2 font-bold rounded-lg border-4 border-slate-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-red-900"
-      role="button">Cancel</a>
+    <button id="signup-cancel" type="button"
+      class="bg-red-400 text-slate-800 py-1 px-2 font-bold rounded-lg border-4 border-slate-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-red-900"
+      role="button">Cancel</button>
   </div>
 </form>
