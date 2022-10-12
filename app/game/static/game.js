@@ -2,6 +2,7 @@ const canvas = document.querySelector("#board");
 const startBtn = document.querySelector("#start-btn");
 const gameContainer = document.querySelector("#game-container");
 const canvasContext = canvas.getContext("2d");
+const REDRAW_DELAY = 25;
 const SEGMENT_SIZE = 20;
 const SEGMENT_DIVISION = 4;
 const SNAKE_LENGTH = 1;
@@ -9,6 +10,21 @@ const SNAKE_COLOR = [0, 200, 0, 1];
 const INITIAL_DIR = "up";
 const FOOD_COLOR = [0, 0, 255, 1];
 const FOOD_LOCATION = [];
+
+// To function correctly, the snake must move per frame by a factor of the segment size.
+// This leads to (eventually) moving in segment-by-segment squares, allowing
+// the snake to line up against the spawned food.
+function findNearestFactor() {
+  for (let x = 0; x < SEGMENT_SIZE - SEGMENT_DIVISION; x++) {
+    if (SEGMENT_SIZE % (SEGMENT_DIVISION + x) === 0) {
+      return SEGMENT_DIVISION + x;
+    }
+    if (SEGMENT_SIZE % (SEGMENT_DIVISION - x) === 0) {
+      return SEGMENT_DIVISION - x;
+    }
+  }
+  return 1;
+}
 
 // Allows placement of a piece on the board in a grid of segment_size tiles
 function convertWithSegments(dimension) {
@@ -117,7 +133,9 @@ class SnakeGame {
 class Snake {
   constructor(color, startingPoint, startingLength) {
     this.segmentColor = color;
-    this.speed = SEGMENT_SIZE / SEGMENT_DIVISION;
+    // this.speed = SEGMENT_SIZE / SEGMENT_DIVISION;
+    // speed is movement per frame, or px per redraw delay
+    this.speed = SEGMENT_SIZE / findNearestFactor();
     this.segments = [new SnakeSegment(color, startingPoint, INITIAL_DIR)];
     for (let x = 0; x < startingLength - 1; x++) {
       this.addSegment();
@@ -418,6 +436,18 @@ function startGame() {
   canvas.focus();
 }
 
+function startGameLoop() {
+  if (currentGame.gameRunning) {
+    stopGame();
+  }
+  resetGame();
+  startRecording();
+  currentGame.gameRunning = true;
+  SnakeFood.spawnFood();
+  canvas.focus();
+  gameloop();
+}
+
 function stopGame() {
   clearInterval(currentGame.snakeInterval);
   updateMatchInfo();
@@ -431,7 +461,21 @@ function resetGame() {
   currentGame.inputQueue = new Queue();
 }
 
-startBtn.addEventListener("click", startGame);
+let elapsed = 0;
+let priorTime = 0;
+
+function gameloop(timestamp) {
+  if (currentGame.gameRunning) {
+    elapsed = Math.min(timestamp - priorTime, REDRAW_DELAY);
+    if (elapsed === REDRAW_DELAY) {
+      priorTime = timestamp;
+      updateBoard();
+    }
+    requestAnimationFrame(gameloop);
+  }
+}
+
+startBtn.addEventListener("click", startGameLoop);
 
 canvas.addEventListener("keydown", (event) => {
   if (currentGame.gameRunning) {
