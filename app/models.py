@@ -9,7 +9,7 @@ class AssociationMatchUser(db.Model):
     time_end = db.Column(
         db.DateTime(timezone=True), default=db.func.now(), onupdate=db.func.now()
     )
-    score = db.Column(db.Integer, nullable=False)
+    score = db.Column(db.Integer)
 
 
 class User(db.Model):

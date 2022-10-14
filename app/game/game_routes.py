@@ -11,9 +11,7 @@ def start_match():
         match = Match(difficulty=request.json.get("difficulty", "Normal"))
         db.session.add(match)
         db.session.commit()
-        match_assoc = AssociationMatchUser(
-            user_id=curr_user_id, match_id=match.id, score=0
-        )
+        match_assoc = AssociationMatchUser(user_id=curr_user_id, match_id=match.id)
         db.session.add(match_assoc)
         db.session.commit()
         return jsonify({"recorded": True, "match_id": match.id})
