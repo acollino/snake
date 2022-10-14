@@ -8,35 +8,33 @@ from app import db
 @user_bp.route("/signup", methods=["GET", "POST"])
 def signup_form():
     form = SignupForm(prefix="signup")
+    errors = {}
     if form.validate_on_submit():
         added = User.signup(form.username.data, form.password.data)
         if added:
             session["user"] = added.id
             return redirect("/")
         else:
-            flash("That username is taken, please choose another.")
+            errors["signup_error"] = "That username is taken, please choose another."
     else:
-        flash(
-            "Your signup details were invalid, please ensure you've entered them correctly."
-        )
-    return redirect("/")
+        errors.update(form.errors)
+    return jsonify(errors)
 
 
 @user_bp.route("/login", methods=["GET", "POST"])
 def login_form():
     form = LoginForm(prefix="login")
+    errors = {}
     if form.validate_on_submit():
         user = User.authenticate(form.username.data, form.password.data)
         if user:
             session["user"] = user.id
             return redirect("/")
         else:
-            flash("The username or password was incorrect.")
+            errors["login_error"] = "The username or password was incorrect."
     else:
-        flash(
-            "Your login details were invalid, please ensure you've entered them correctly."
-        )
-    return redirect("/")
+        errors.update(form.errors)
+    return jsonify(errors)
 
 
 @user_bp.route("/logout", methods=["GET"])
@@ -55,7 +53,11 @@ def user_stats():
         if curr_user:
             match_history_query = (
                 Match.query.with_entities(
-                    Match.time, Match.winner_id, AssociationMatchUser.score
+                    Match.time,
+                    Match.difficulty,
+                    Match.winner_id,
+                    AssociationMatchUser.score,
+                    AssociationMatchUser.time_end,
                 )
                 .join(AssociationMatchUser, Match.id == AssociationMatchUser.match_id)
                 .filter(AssociationMatchUser.user_id == curr_user.id)
@@ -94,8 +96,3 @@ def user_stats():
             )
     else:
         return jsonify({"error": "You must be logged in to view your user statistics."})
-
-
-@user_bp.route("/profile")
-def show_profile():
-    pass

@@ -8,7 +8,7 @@ from app.models import AssociationMatchUser, Match
 def start_match():
     curr_user_id = session.get("user", None)
     if curr_user_id:
-        match = Match()
+        match = Match(difficulty=request.json.get("difficulty", "Normal"))
         db.session.add(match)
         db.session.commit()
         match_assoc = AssociationMatchUser(
@@ -33,3 +33,12 @@ def update_match(id):
             db.session.commit()
             return jsonify({"recorded": True, "score": match_assoc.score})
     return jsonify({"recorded": False})
+
+
+@game_bp.route("/direction", methods=["POST"])
+def record_direction():
+    direction = request.json.get("direction", None)
+    if direction:
+        return jsonify({"recorded": True, "direction": direction})
+    else:
+        return jsonify({"recorded": False})

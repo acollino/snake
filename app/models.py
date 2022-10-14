@@ -6,9 +6,10 @@ class AssociationMatchUser(db.Model):
 
     match_id = db.Column(db.Integer, db.ForeignKey("matches.id"), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    time_end = db.Column(
+        db.DateTime(timezone=True), default=db.func.now(), onupdate=db.func.now()
+    )
     score = db.Column(db.Integer, nullable=False)
-
-    # relationships
 
 
 class User(db.Model):
@@ -53,6 +54,7 @@ class Match(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     time = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    difficulty = db.Column(db.Text, nullable=False)
     winner_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
     def to_dict(self):

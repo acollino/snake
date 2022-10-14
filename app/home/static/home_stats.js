@@ -15,11 +15,9 @@ function createStatElements() {
   let counts = document.createElement("div");
   let total = document.createElement("div");
   total.id = "total";
-  let wins = document.createElement("div");
-  wins.id = "wins";
   let highScore = document.createElement("div");
   highScore.id = "high-score";
-  counts.append(total, wins, highScore);
+  counts.append(total, highScore);
   stats.append(counts);
   let title = document.createElement("div");
   title.classList.add("mt-4", "mb-1", "underline", "font-bold");
@@ -32,10 +30,8 @@ function createStatElements() {
 
 function updateStats(dataObj) {
   let total = document.querySelector("#total");
-  let wins = document.querySelector("#wins");
   let highScore = document.querySelector("#high-score");
   total.textContent = `Total Matches: ${dataObj.counts.total}`;
-  wins.textContent = `Total Wins: ${dataObj.counts.win}`;
   highScore.textContent = `High Score: ${dataObj.counts.high_score}`;
 }
 
@@ -44,17 +40,30 @@ function updateMatches(dataObj) {
   matches.textContent = "";
   dataObj.matches.forEach((match) => {
     let matchListItem = document.createElement("li");
-    let matchTime = document.createElement("div");
+    matchListItem.classList.add("my-4", "text-sm");
+    let matchStartTime = document.createElement("div");
+    let matchType = document.createElement("div");
+    let matchDuration = document.createElement("div");
     let matchScore = document.createElement("div");
-    let matchResult = document.createElement("div");
-    matchTime.textContent = `${match.time}`;
+    matchStartTime.textContent = new Date(match.time).toLocaleString();
+    matchType = `Difficulty: ${match.difficulty}`;
+    let durationSeconds =
+      (new Date(match.time_end).getTime() - new Date(match.time).getTime()) /
+      1000;
+    let hours = Math.floor(durationSeconds / 3600);
+    let minutes = Math.floor((durationSeconds % 3600) / 60);
+    let seconds = Math.floor((durationSeconds % 3600) % 60);
+    let hourStr =
+      hours > 0 ? hours + (hours === 1 ? " hour, " : " hours, ") : "";
+    let minStr =
+      minutes > 0 ? minutes + (minutes === 1 ? " minute, " : " minutes, ") : "";
+    let secStr =
+      seconds > 0
+        ? seconds + (seconds === 1 ? " second" : " seconds")
+        : "0 seconds";
+    matchDuration.textContent = "Duration: " + hourStr + minStr + secStr;
     matchScore.textContent = `Score: ${match.score}`;
-    if (dataObj.user_id == match.winner_id) {
-      matchResult.textContent = `Result: Win`;
-    } else {
-      matchResult.textContent = `Result: Loss`;
-    }
-    matchListItem.append(matchTime, matchResult, matchScore);
+    matchListItem.append(matchStartTime, matchType, matchDuration, matchScore);
     matches.append(matchListItem);
   });
 }

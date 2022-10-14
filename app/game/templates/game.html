@@ -1,7 +1,21 @@
 <script src="{{ url_for('game.static', filename='queue.js') }}" defer></script>
 <script src="{{ url_for('game.static', filename='game.js') }}" defer></script>
-<div class="flex flex-col items-center">
+<div class="flex flex-col items-center w-min mx-auto">
   <canvas class="bg-amber-200" id="board" height="540" width="540" tabindex="-1"></canvas>
-  <button id="start-btn"
-    class="bg-green-400 text-neutral-800 text-2xl py-1 px-2 mt-1 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-green-900">Start</button>
+  <div class="flex justify-center w-full items-center">
+    <div>
+      <div class="text-lg ">Select Difficulty:</div>
+      <div id="difficulty-container">
+        <button id="normal-btn" data-diff-value="0" data-color="green"
+          class="w-24 bg-green-400 text-neutral-800 text-lg py-1 px-2 mt-1 font-bold rounded-lg border-4 border-green-900 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-green-900">Normal</button>
+        <button id="difficult-btn" data-diff-value="1" data-color="yellow"
+          class="w-24 bg-neutral-100 text-neutral-800 text-lg py-1 px-2 mt-1 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-yellow-900">Hard</button>
+        <button id="challenge-btn" data-diff-value="2" data-color="red"
+          class="w-24 bg-neutral-100 text-neutral-800 text-lg py-1 px-2 mt-1 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-red-900">Expert</button>
+      </div>
+      <div class="text-sm mt-1">Higher difficulties will multiply your score!</div>
+    </div>
+    <button id="start-btn"
+      class="bg-blue-400 text-neutral-800 text-2xl ml-2 px-4 py-2 mt-1 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-blue-900">Start</button>
+  </div>
 </div>
