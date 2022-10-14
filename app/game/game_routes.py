@@ -8,7 +8,7 @@ from app.models import AssociationMatchUser, Match
 def start_match():
     curr_user_id = session.get("user", None)
     if curr_user_id:
-        match = Match()
+        match = Match(difficulty=request.json.get("difficulty", "Normal"))
         db.session.add(match)
         db.session.commit()
         match_assoc = AssociationMatchUser(
