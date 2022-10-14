@@ -53,7 +53,11 @@ def user_stats():
         if curr_user:
             match_history_query = (
                 Match.query.with_entities(
-                    Match.time, Match.winner_id, AssociationMatchUser.score
+                    Match.time,
+                    Match.difficulty,
+                    Match.winner_id,
+                    AssociationMatchUser.score,
+                    AssociationMatchUser.time_end,
                 )
                 .join(AssociationMatchUser, Match.id == AssociationMatchUser.match_id)
                 .filter(AssociationMatchUser.user_id == curr_user.id)
@@ -92,8 +96,3 @@ def user_stats():
             )
     else:
         return jsonify({"error": "You must be logged in to view your user statistics."})
-
-
-@user_bp.route("/profile")
-def show_profile():
-    pass
