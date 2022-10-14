@@ -12,38 +12,31 @@
 
 {% block content %}
 <div class="flex flex-col h-screen">
-  <div class="flex px-8 py-4">
-    <div class="material-symbols-outlined text-4xl w-40">menu</div>
+  <div class="flex px-8 py-3">
+    <div class="w-40"></div>
     <div class="sigmar text-4xl grow text-center">Snake Game</div>
     {% if session["user"] %}
-    <a href="/logout"
-      class="bg-blue-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-blue-900">Logout</a>
+    <div class="w-40">
+      <a href="/logout"
+        class="inline-block bg-blue-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-blue-900">Logout</a>
+    </div>
     {% else %}
     <div class="flex w-40">
-      <div id="login-btn"
+      <button id="login-btn"
         class="bg-blue-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-blue-900">
-        Login</div>
-      <div id="signup-btn"
+        Login</button>
+      <button id="signup-btn"
         class="bg-purple-500 text-neutral-800 py-1 px-2 font-bold rounded-lg border-4 border-neutral-800 ease-linear transition-all duration-150 active:bg-neutral-100 hover:border-purple-900">
-        Sign Up</div>
+        Sign Up</button>
     </div>
     {% endif %}
   </div>
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-  <div>
-    {% for message in messages %}
-    <div class="text-lg text-center text-red-400">{{message}}</div>
-    {% endfor %}
-  </div>
-  {% endif %}
-  {% endwith %}
-  <div class="flex mx-8 my-4 grow">
-    <div id="stats" class="flex flex-col w-72">
+  <div class="flex mx-8 mt-3 mb-4 grow">
+    <div id="stats" class="flex flex-col w-72 text-center">
       {% if session["user"] %}
-      <div class="text-center font-bold underline text-xl">Your Stats</div>
+      <div class="text-center font-bold text-3xl mb-1">Your Stats</div>
       {% else %}
-      <div class="text-center font-bold text-lg">You must be signed in to view your stats.</div>
+      <div class="text-center font-bold text-lg">Feel free to play, but logging in will let you track your scores!</div>
       {% endif %}
     </div>
     <div class="grow text-center" id="game-container">{% include 'game.html' %}</div>
