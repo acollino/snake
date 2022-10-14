@@ -2,6 +2,12 @@ const canvas = document.querySelector("#board");
 const startBtn = document.querySelector("#start-btn");
 const gameContainer = document.querySelector("#game-container");
 const canvasContext = canvas.getContext("2d", { willReadFrequently: true });
+const difficultyContainer = document.querySelector("#difficulty-container");
+const DIFFICULTIES = [
+  { redraw: 25, walls: 0, score: 1, mode: "Normal" },
+  { redraw: 20, walls: 2, score: 2, mode: "Hard" },
+  { redraw: 15, walls: 5, score: 3, mode: "Expert" },
+];
 const REDRAW_DELAY = 25;
 const SEGMENT_SIZE = 20;
 const SEGMENT_DIVISION = 4;
@@ -33,6 +39,18 @@ function convertWithSegments(dimension) {
   return Math.round(usableRange / SEGMENT_SIZE) * SEGMENT_SIZE;
 }
 
+// Returns a random point that is aligned to a segment size based grid.
+function getRandomPoint() {
+  let usableWidth = convertWithSegments(canvas.width);
+  let usableHeight = convertWithSegments(canvas.height);
+  let randomX = Math.floor((Math.random() * usableWidth) / SEGMENT_SIZE);
+  let randomY = Math.floor((Math.random() * usableHeight) / SEGMENT_SIZE);
+  return {
+    x: randomX * SEGMENT_SIZE,
+    y: randomY * SEGMENT_SIZE,
+  };
+}
+
 // Gets the info for a 1x1 square at a given point, returning an array rather
 // than the default Uint8ClampedArray which has alpha as 0-255 instead of 0-1.
 // Return format is [R value, G value, B value, Alpha value]
@@ -42,7 +60,7 @@ function getColorInfoAtCoord(point) {
   return pixelData;
 }
 
-// Convert between arrays of rgba values and the required Strings for inputs
+// Convert between arrays of rgba values and the required Strings for canvas
 function toColorString(colorArray) {
   return `rgba(${colorArray.join(", ")})`;
 }
@@ -66,6 +84,7 @@ function clearSegment(originPoint) {
   );
 }
 
+// clear between 2 points along their x or y axis
 function clearBetween(oldPoint, newPoint) {
   if (oldPoint.x === newPoint.x) {
     let startingY = oldPoint.y;
@@ -93,6 +112,7 @@ function clearBetween(oldPoint, newPoint) {
   }
 }
 
+// Draw the inital countdown on the canvas
 function countdown() {
   let point = { x: canvas.width / 2 - 16, y: canvas.height / 2 };
   canvasContext.fillStyle = "black";
@@ -110,7 +130,7 @@ function countdown() {
   TIMEOUTS.push(setTimeout(clearEntireBoard, 3000));
 }
 
-class gameItem {
+class GameItem {
   constructor(color, spawnPoint) {
     this.x = spawnPoint.x;
     this.y = spawnPoint.y;
@@ -151,7 +171,6 @@ class SnakeGame {
 class Snake {
   constructor(color, startingPoint, startingLength) {
     this.segmentColor = color;
-    // this.speed = SEGMENT_SIZE / SEGMENT_DIVISION;
     // speed is movement per frame, or px per redraw delay
     this.speed = SEGMENT_SIZE / findNearestFactor();
     this.segments = [new SnakeSegment(color, startingPoint, INITIAL_DIR)];
@@ -204,7 +223,7 @@ class Snake {
         }
       }
       if (this.turnMap.has(i)) {
-        // Meant for moving at fractions of segment size rather than by full size
+        // Ensures a segment is in line with its predecessor before moving
         let matchX = currentSegment.x == this.segments[i - 1].x;
         let matchY = currentSegment.y == this.segments[i - 1].y;
         if (matchX || matchY) {
@@ -323,7 +342,7 @@ class Snake {
   }
 }
 
-class SnakeSegment extends gameItem {
+class SnakeSegment extends GameItem {
   constructor(color, spawnPoint, direction) {
     super(color, spawnPoint);
     this.direction = direction;
@@ -359,33 +378,22 @@ class SnakeSegment extends gameItem {
   }
 }
 
-class SnakeFood extends gameItem {
+class SnakeFood extends GameItem {
   constructor(color, spawnPoint) {
     super(color, spawnPoint);
   }
 
-  // temporary use of while loop here with break in case it causes a hang,
-  // plan to swap out/combine with using array of spawn locations - should
-  // get better as the snake takes up more of the screen.
+  // Use of while loop could theoretically cause a delay in spawning if the
+  // snake + walls occupy most of the available space - an optional solution
+  // could switch to using array of open locations as the snake gets larger.
   static spawnFood() {
-    let usableWidth = convertWithSegments(canvas.width);
-    let usableHeight = convertWithSegments(canvas.height);
-    let randomX = Math.floor((Math.random() * usableWidth) / SEGMENT_SIZE);
-    let randomY = Math.floor((Math.random() * usableHeight) / SEGMENT_SIZE);
-    let spawnPoint = {
-      x: randomX * SEGMENT_SIZE,
-      y: randomY * SEGMENT_SIZE,
-    };
+    let spawnPoint = getRandomPoint();
     let attemptTracker = 0;
     while (!matchesColor(getColorInfoAtCoord(spawnPoint), [0, 0, 0, 0])) {
       attemptTracker++;
-      randomX = Math.floor((Math.random() * usableWidth) / SEGMENT_SIZE);
-      randomY = Math.floor((Math.random() * usableHeight) / SEGMENT_SIZE);
-      spawnPoint = {
-        x: randomX * SEGMENT_SIZE,
-        y: randomY * SEGMENT_SIZE,
-      };
-      if (attemptTracker == 100) {
+      spawnPoint = getRandomPoint();
+      if (attemptTracker == 200) {
+        // Break in case food is taking too long to place and avoid an infinite loop
         stopGame();
         console.log("Took too long to place food.");
         break;
@@ -396,11 +404,71 @@ class SnakeFood extends gameItem {
   }
 }
 
+class GameWall {
+  constructor(spawnPoint, numConnectedWalls) {
+    this.wallPoints = [];
+    this.walls = [];
+    this.spawnWallSegment(spawnPoint);
+    for (let x = 1; x < numConnectedWalls; x++) {
+      let wallOptions = this.getAdjacentOrigins();
+      let randomIndex = Math.floor(Math.random() * wallOptions.length);
+      this.spawnWallSegment(wallOptions[randomIndex]);
+    }
+  }
+
+  // Gets the origin points of open segments next to the current wall
+  getAdjacentOrigins() {
+    let wallOriginOptions = [];
+    for (let startPoint of this.wallPoints) {
+      let points = [
+        { x: startPoint.x - SEGMENT_SIZE, y: startPoint.y },
+        { x: startPoint.x + SEGMENT_SIZE, y: startPoint.y },
+        { x: startPoint.x, y: startPoint.y + SEGMENT_SIZE },
+        { x: startPoint.x, y: startPoint.y - SEGMENT_SIZE },
+      ];
+      for (let point of points) {
+        let inBoundsX = point.x >= 0 && point.x < canvas.width;
+        let inBoundsY = point.y >= 0 && point.y < canvas.height;
+        let emptySegment = matchesColor(
+          getColorInfoAtCoord(point),
+          [0, 0, 0, 0]
+        );
+        if (inBoundsX && inBoundsY && emptySegment) {
+          wallOriginOptions.push(point);
+        }
+      }
+    }
+    return wallOriginOptions;
+  }
+
+  spawnWallSegment(originPoint) {
+    this.wallPoints.push(originPoint);
+    this.walls.push(new GameItem(toColorString([0, 0, 0, 1]), originPoint));
+  }
+
+  // Spawns a 'numWalls' amount of 3-6 segment walls randomly
+  static spawnRandomWall(numWalls) {
+    for (let count = 0; count < numWalls; count++) {
+      let spawnPoint = getRandomPoint();
+      let numSegments = Math.floor(Math.random() * 4) + 3;
+      new GameWall(spawnPoint, numSegments);
+    }
+  }
+}
+
 let currentGame = new SnakeGame();
+let elapsed = 0;
+let priorTime = 0;
 clearEntireBoard();
 
 async function startRecording() {
-  let startResp = await fetch("/start_match", { method: "POST" });
+  let startResp = await fetch("/start_match", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      difficulty: DIFFICULTIES[currentGame.difficulty].mode,
+    }),
+  });
   let startData = await startResp.json();
   if (startData.recorded) {
     currentGame.gameID = startData.match_id;
@@ -413,12 +481,14 @@ async function updateMatchInfo() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        score: currentGame.gameSnake.segments.length - 1,
+        score:
+          (currentGame.gameSnake.segments.length - 1) *
+          DIFFICULTIES[currentGame.difficulty].score,
       }),
     });
     let updateData = await updateResp.json();
     if (!updateData.recorded) {
-      // notify user that stats aren't recorded, but don't stop game
+      console.log("Stats could not be recorded.");
     }
     let stopEvent = new Event("gameover");
     gameContainer.dispatchEvent(stopEvent);
@@ -443,47 +513,39 @@ function updateBoard() {
   }
 }
 
-function startGame() {
-  if (currentGame.gameRunning) {
-    stopGame();
-  }
-  resetGame();
-  startRecording();
-  currentGame.gameRunning = true;
-  SnakeFood.spawnFood();
-  currentGame.snakeInterval = setInterval(updateBoard, 25);
-  canvas.focus();
-}
-
 function startGameLoop() {
   resetGame();
   startRecording();
   currentGame.gameRunning = true;
   SnakeFood.spawnFood();
+  let numWalls = DIFFICULTIES[currentGame.difficulty].walls;
+  GameWall.spawnRandomWall(numWalls);
   canvas.focus();
   gameloop();
 }
 
 function stopGame() {
-  clearInterval(currentGame.snakeInterval);
   updateMatchInfo();
   currentGame.gameRunning = false;
 }
 
 function resetGame() {
   clearEntireBoard();
+  elapsed = 0;
+  priorTime = 0;
   currentGame.createSnake();
   currentGame.cycleCounter = 0;
   currentGame.inputQueue = new Queue();
+  if (currentGame.difficulty === undefined) {
+    currentGame.difficulty = 0;
+  }
 }
-
-let elapsed = 0;
-let priorTime = 0;
 
 function gameloop(timestamp) {
   if (currentGame.gameRunning) {
-    elapsed = Math.min(timestamp - priorTime, REDRAW_DELAY);
-    if (elapsed === REDRAW_DELAY) {
+    let redrawDelay = DIFFICULTIES[currentGame.difficulty].redraw;
+    elapsed = Math.min(timestamp - priorTime, redrawDelay);
+    if (elapsed === redrawDelay) {
       priorTime = timestamp;
       updateBoard();
     }
@@ -519,7 +581,31 @@ canvas.addEventListener("keydown", (event) => {
   }
 });
 
-// For multiplayer use?
+difficultyContainer.addEventListener("click", (event) => {
+  if (event.target instanceof HTMLButtonElement && !currentGame.gameRunning) {
+    let difficulty = parseInt(event.target.getAttribute("data-diff-value"));
+    let color = event.target.getAttribute("data-color");
+    let targetID = event.target.id;
+    if (difficulty >= 0 && difficulty < DIFFICULTIES.length) {
+      currentGame.difficulty = difficulty;
+      event.target.classList.remove("bg-neutral-100");
+      event.target.classList.add(`bg-${color}-400`);
+      event.target.classList.remove(`border-neutral-800`);
+      event.target.classList.add(`border-${color}-900`);
+    }
+    for (let element of difficultyContainer.children) {
+      if (element.id !== targetID) {
+        let elementColor = element.getAttribute("data-color");
+        element.classList.remove(`bg-${elementColor}-400`);
+        element.classList.add(`bg-neutral-100`);
+        element.classList.remove(`border-${elementColor}-900`);
+        element.classList.add(`border-neutral-800`);
+      }
+    }
+  }
+});
+
+// For multiplayer use, submitting moves to the server
 async function submitMove(event) {
   if (currentGame.gameRunning) {
     let key = event.key.toLowerCase().replace("arrow", "");
