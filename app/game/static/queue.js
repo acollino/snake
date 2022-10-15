@@ -1,4 +1,4 @@
-class Queue {
+export class Queue {
   constructor(data = null) {
     this.length = 0;
     if (data) {
