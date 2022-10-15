@@ -1,5 +1,4 @@
-<script src="{{ url_for('game.static', filename='queue.js') }}" defer></script>
-<script src="{{ url_for('game.static', filename='game.js') }}" defer></script>
+<script type="module" src="{{ url_for('game.static', filename='game_runner.js') }}"></script>
 <div class="flex flex-col items-center w-min mx-auto">
   <canvas class="bg-amber-200" id="board" height="540" width="540" tabindex="-1"></canvas>
   <div class="flex justify-center w-full items-center">

@@ -6,8 +6,8 @@ async function getUserStats() {
   if (data.error) {
     stats.textContent = data.error;
   } else {
-    updateStats(data);
-    updateMatches(data);
+    displayStats(data);
+    displayMatches(data);
   }
 }
 
@@ -28,14 +28,14 @@ function createStatElements() {
   stats.append(matches);
 }
 
-function updateStats(dataObj) {
+function displayStats(dataObj) {
   let total = document.querySelector("#total");
   let highScore = document.querySelector("#high-score");
   total.textContent = `Total Matches: ${dataObj.counts.total}`;
   highScore.textContent = `High Score: ${dataObj.counts.high_score}`;
 }
 
-function updateMatches(dataObj) {
+function displayMatches(dataObj) {
   let matches = document.querySelector("#matches");
   matches.textContent = "";
   dataObj.matches.forEach((match) => {
@@ -50,22 +50,25 @@ function updateMatches(dataObj) {
     let durationSeconds =
       (new Date(match.time_end).getTime() - new Date(match.time).getTime()) /
       1000;
-    let hours = Math.floor(durationSeconds / 3600);
-    let minutes = Math.floor((durationSeconds % 3600) / 60);
-    let seconds = Math.floor((durationSeconds % 3600) % 60);
-    let hourStr =
-      hours > 0 ? hours + (hours === 1 ? " hour, " : " hours, ") : "";
-    let minStr =
-      minutes > 0 ? minutes + (minutes === 1 ? " minute, " : " minutes, ") : "";
-    let secStr =
-      seconds > 0
-        ? seconds + (seconds === 1 ? " second" : " seconds")
-        : "0 seconds";
-    matchDuration.textContent = "Duration: " + hourStr + minStr + secStr;
-    matchScore.textContent = `Score: ${match.score}`;
+    matchDuration.textContent = toDurationString(durationSeconds);
+    matchScore.textContent = `Score: ${Number(match.score)}`;
     matchListItem.append(matchStartTime, matchType, matchDuration, matchScore);
     matches.append(matchListItem);
   });
+}
+
+function toDurationString(initialTime) {
+  let hours = Math.floor(initialTime / 3600);
+  let minutes = Math.floor((initialTime % 3600) / 60);
+  let seconds = Math.floor((initialTime % 3600) % 60);
+  let hourStr = hours > 0 ? hours + (hours === 1 ? " hour, " : " hours, ") : "";
+  let minStr =
+    minutes > 0 ? minutes + (minutes === 1 ? " minute, " : " minutes, ") : "";
+  let secStr =
+    seconds > 0
+      ? seconds + (seconds === 1 ? " second" : " seconds")
+      : "0 seconds";
+  return "Duration: " + hourStr + minStr + secStr;
 }
 
 document.querySelector("#game-container").addEventListener("gameover", () => {

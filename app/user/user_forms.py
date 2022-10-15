@@ -4,6 +4,11 @@ from wtforms.validators import InputRequired, Length
 
 
 class SignupForm(FlaskForm):
+    """A representation of a user account signup form.
+    While a single form could have been used in both cases, they were
+    written separately to simplify future changes to the signup, i.e. including
+    an email for account recovery purposes."""
+
     username = StringField(
         "Username",
         validators=[
@@ -21,6 +26,8 @@ class SignupForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
+    """A representation of a user account login form."""
+
     username = StringField(
         "Username",
         validators=[
