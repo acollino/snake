@@ -2,6 +2,10 @@ from app import db, bcrypt
 
 
 class AssociationMatchUser(db.Model):
+    """A representation of a particular User's performance in a match.
+    Implemented for a multiplayer game, this records the User's final score and
+    the time they left the game - which may be different for each user in the match."""
+
     __tablename__ = "association_match_user"
 
     match_id = db.Column(db.Integer, db.ForeignKey("matches.id"), primary_key=True)
@@ -13,6 +17,9 @@ class AssociationMatchUser(db.Model):
 
 
 class User(db.Model):
+    """A representation of a single User of the Snake Game website, with
+    class methods to handle account creation and login authentication."""
+
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -50,6 +57,11 @@ class User(db.Model):
 
 
 class Match(db.Model):
+    """A representation of a single match. Implemented with multiplayer
+    games in consideration, this records the elements that will be consistent
+    for all players in a match - the start time, the difficulty level, and the
+    winner of the match."""
+
     __tablename__ = "matches"
 
     id = db.Column(db.Integer, primary_key=True)

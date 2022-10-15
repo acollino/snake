@@ -1,12 +1,14 @@
-from flask import redirect, session, jsonify, flash
+from flask import redirect, session, jsonify
 from app.user.user_forms import SignupForm, LoginForm
 from app.models import User, Match, AssociationMatchUser
 from app.user import user_bp
 from app import db
 
 
-@user_bp.route("/signup", methods=["GET", "POST"])
+@user_bp.route("/signup", methods=["POST"])
 def signup_form():
+    """Handles processing of the signup form, validating it
+    and ensuring there are no duplicate usernames."""
     form = SignupForm(prefix="signup")
     errors = {}
     if form.validate_on_submit():
@@ -21,8 +23,10 @@ def signup_form():
     return jsonify(errors)
 
 
-@user_bp.route("/login", methods=["GET", "POST"])
+@user_bp.route("/login", methods=["POST"])
 def login_form():
+    """Handles processing of the login form, validating it
+    and ensuring the correct username and password have been entered."""
     form = LoginForm(prefix="login")
     errors = {}
     if form.validate_on_submit():
@@ -39,6 +43,7 @@ def login_form():
 
 @user_bp.route("/logout", methods=["GET"])
 def logout():
+    """Removes the user from the session and refreshes the page to log out."""
     if "user" in session:
         session.pop("user")
     return redirect("/")

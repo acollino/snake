@@ -6,6 +6,8 @@ from app.models import AssociationMatchUser, Match
 
 @game_bp.route("/start_match", methods=["POST"])
 def start_match():
+    """Start recording match data by creating entries in the Match and
+    AssociationMatchUser tables."""
     curr_user_id = session.get("user", None)
     if curr_user_id:
         match = Match(difficulty=request.json.get("difficulty", "Normal"))
@@ -20,6 +22,9 @@ def start_match():
 
 @game_bp.route("/update_match/<int:id>", methods=["POST"])
 def update_match(id):
+    """Find the matching AssociationMatchUser entry, then update it with
+    the player's score. This also triggers the row's onupdate property,
+    recording the time_end column to be the time the score was recorded."""
     curr_user_id = session.get("user", None)
     if curr_user_id:
         match_assoc = AssociationMatchUser.query.filter(
@@ -35,6 +40,9 @@ def update_match(id):
 
 @game_bp.route("/direction", methods=["POST"])
 def record_direction():
+    """Meant for multiplayer use, the receives a direction input from a
+    user, allowing it to be broadcast simultaneously to other users in
+    the match. Not fully implemented."""
     direction = request.json.get("direction", None)
     if direction:
         return jsonify({"recorded": True, "direction": direction})
